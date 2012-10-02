@@ -1,4 +1,4 @@
-language-toolkit
+The Mini-Language-Toolkit
 ================
 
-A library for constructing languages, from the parser, all the way to code generation.
+A library for constructing executable languages, from the parser, all the way to code generation.
