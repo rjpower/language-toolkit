@@ -36,17 +36,17 @@ def all_children(tree):
 
 @memoized(lambda t: t.__class__)
 def required_children(tree):
-  m = []
+  m = set()
   for c in tree.__class__.mro():
-    m.extend(getattr(c, '_required', []))
-  return m
+    m.update(getattr(c, '_required', []))
+  return list(m)
 
 @memoized(lambda t: t.__class__)
 def optional_children(tree):
-  m = []
+  m = set()
   for c in tree.__class__.mro():
-    m.extend(getattr(c, '_optional', []))
-  return m
+    m.update(getattr(c, '_optional', []))
+  return list(m)
   
 class TreeLike(object):
   def __init__(self, *args, **kw):
