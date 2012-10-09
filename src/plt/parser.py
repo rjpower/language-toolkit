@@ -5,21 +5,28 @@ class ParseError(Exception):
   def __init__(self, scanner, msg):
     self.pos = scanner.pos
     self.msg = msg
+    self.scanner = scanner
     
   def __str__(self):
-    return 'Parse error at position %s: %s' % (self.pos, self.msg)
+    return 'Parse error at position %s.  Expected %s, found "%s..."' % (
+            self.pos, self.msg, self.scanner.source[self.pos:self.pos+5])
 
 class Parser(object):
   pass
-    
+
 def pretty(obj):
   if hasattr(obj, '__name__'): return obj.__name__
   return repr(obj)
   
 def parse(obj, scanner):
   logging.debug('Parsing... %s', obj)
-  if hasattr(obj, 'parser'): 
-    result = obj.parser().parse(scanner)
+  if isinstance(obj, str):
+    obj = term(obj)
+  
+  if hasattr(obj, 'parser'):
+    p = obj.parser()
+    if isinstance(p, tuple): p = seq(*p)
+    result = p.parse(scanner)
     return obj(result)
   else:
     return obj.parse(scanner)
@@ -67,6 +74,14 @@ class Scanner(object):
   def pop_mark(self):
     self.pos = self.marks.pop()
 
+class EndOfFile(Parser):
+  def parse(self, scanner):
+    scanner.nomnom()
+    if scanner.pos == len(scanner.source):
+      return
+    raise ParseError(scanner, 'EOF')    
+
+EOF = EndOfFile()
 
 class opt(Parser):
   def __init__(self, *seq):
