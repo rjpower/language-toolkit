@@ -1,7 +1,7 @@
 import copy
 import logging
-
 import sys
+
 FunctionType = sys.modules.get('types').FunctionType
 
 def dict_like(value): return isinstance(value, dict)
@@ -17,15 +17,18 @@ def flatten(lst):
     else: res.append(elem)
   return res
 
-def memoized(key_fn, f):
-  _cache = {}
-  def memoized_f(*args, **kw):
-    key = key_fn(*args, **kw)
-    if not key in _cache:
-      _cache[key] = f(*args, **kw)
-    return _cache[key]
-  return memoized_f
-    
+class memoized(object):
+  def __init__(self, key_fn):
+    self.key_fn = key_fn
+  
+  def __call__(self, f):
+    _cache = {}
+    def cached(*args, **kw):
+      key = self.key_fn(*args, **kw)
+      if not key in _cache:
+        _cache[key] = f(*args, **kw)
+      return _cache[key]
+    return cached
 
 @memoized(lambda t: t.__class__)
 def all_children(tree):
@@ -34,14 +37,14 @@ def all_children(tree):
 @memoized(lambda t: t.__class__)
 def required_children(tree):
   m = []
-  for c in klass.mro():
+  for c in tree.__class__.mro():
     m.extend(getattr(c, '_required', []))
   return m
 
 @memoized(lambda t: t.__class__)
 def optional_children(tree):
   m = []
-  for c in klass.mro():
+  for c in tree.__class__.mro():
     m.extend(getattr(c, '_optional', []))
   return m
   
@@ -50,7 +53,8 @@ class TreeLike(object):
     self.parent = None
     if len(args) > len(all_children(self)):
       raise Exception('Too many arguments for ' + self.__class__.__name__ + 
-                      '.  Expected: ' + str(all_children(self)))
+                      '.  Expected: ' + str(all_children(self)) + 
+                      '.  Got: %s %s' % (args, kw))
     
     for i in range(len(args), len(required_children(self))):
       arg = required_children(self)[i]
@@ -68,7 +72,7 @@ class TreeLike(object):
         logging.warn('Keyword argument %s not recognized for %s: %s', k, self.node_type(), all_children(self))
       setattr(self, k, v)
       
-  def ancestor(self, filter_fn = lambda n: True):
+  def ancestor(self, filter_fn=lambda n: True):
     'Return the first ancestor of this node matching filter_fn'
     assert isinstance(filter_fn, FunctionType)
     n = self.parent
@@ -110,11 +114,35 @@ class TreeLike(object):
     return cmp(self.children(), o.children())
   
   def __str__(self):
-    return self.repr({})
+    return repr(self)
   
   def __repr__(self):
-    return self.repr({})
+    return tree_repr(self, {})
+
+def tree_repr(tree, only_once):
+  def _(node):
+    if tree_like(node):
+      return tree_repr(node, only_once)
+    return repr(node)
   
+  if id(tree) in only_once: 
+    return only_once[id(tree)]
+  
+  only_once[id(tree)] = '<circular reference>'
+  
+  rv = tree.node_type() + ':\n'
+  for k, v in tree.child_dict().items():
+    if dict_like(v):
+      for kk, vv in v.iteritems(): rv += '%s.%s : %s\n' % (k, kk, _(vv))
+    elif list_like(v):
+      for elem in v: rv += '%s: %s\n' % (k, _(elem))
+    else:
+      rv += '%s: %s\n' % (k, _(v))
+  rv = rv.strip()
+  only_once[id(tree)] = rv.replace('\n', '\n  |')
+  return only_once[id(tree)]
+
+
 def transform(tree, filter_fn, replace_fn):
   tree.mark_children()
   for k in all_children(tree):
@@ -137,7 +165,7 @@ def transform(tree, filter_fn, replace_fn):
         if filter_fn(v[i]): 
           v[i] = replace_fn(v[i])
 
-def expand_children(tree, filter_fn=lambda n: True, depth=-1):
+def expand_children(tree, filter_fn=lambda n: True, depth= -1):
   if filter_fn(tree):
     yield tree
     
