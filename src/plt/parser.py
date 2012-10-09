@@ -113,10 +113,16 @@ class ObjParser(Parser):
   def parse(self, scanner):
     args = {}
     concrete = []
-    for name, p in self.assignments:
-      v = parse(p, scanner)
+    for p in self.assignments:
+      # if we were given a name to bind to, assign it to our argument list
+      if isinstance(p, tuple):
+        name, p = p
+        v = parse(p, scanner)
+        args[name] = v
+      else:
+        v = parse(p, scanner)        
       concrete.append(v)
-      if name != IGNORE: args[name] = v
+      
     args['concrete'] = concrete
     return self.klass(**args) 
 
