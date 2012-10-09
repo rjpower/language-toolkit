@@ -93,7 +93,7 @@ class TreeLike(object):
     return '.'.join(reversed(p))
 
   def copy(self):
-    return copy.deepcopy(self)j
+    return copy.deepcopy(self)
 
   def child_dict(self):
     d = {}
@@ -108,27 +108,6 @@ class TreeLike(object):
     if not isinstance(o, self.__class__):
       return 1
     return cmp(self.children(), o.children())
-  
-  def repr(self, only_once):
-    def _(node):
-      if tree_like(node):
-        return node.repr(only_once)
-      return repr(node)
-    
-    if id(self) in only_once: return only_once[id(self)]
-    only_once[id(self)] = '<circular reference>'
-    
-    rv = self.node_type() + ':\n'
-    for k, v in self.child_dict().items():
-      if dict_like(v):
-        for kk, vv in v.iteritems(): rv += '%s.%s : %s\n' % (k, kk, _(vv))
-      elif list_like(v):
-        for elem in v: rv += '%s: %s\n' % (k, _(elem))
-      else:
-        rv += '%s: %s\n' % (k, _(v))
-    rv = rv.strip()
-    only_once[id(self)] = rv.replace('\n', '\n  |')
-    return only_once[id(self)]
   
   def __str__(self):
     return self.repr({})
