@@ -22,15 +22,15 @@ class TestLisp(unittest.TestCase):
   def test_eval_int(self):
     p = parse(Atom, '123')
     env = InterpreterEnv(lisp.BUILTINS)
-    self.assertEqual(p.eval(env), 123)
+    self.assertEqual(env.eval(p.code()), 123)
     
   def test_eval_sexpr(self):
     p = parse(SExpr, '(+ 123 456)')
     env = InterpreterEnv(lisp.BUILTINS)
-    self.assertEqual(p.eval(env), 579)
+    self.assertEqual(env.eval(p.code()), 579)
     
   def test_eval_program(self):
     p = parse(Program, '(+ 123 456) (+ 1 2) (+ 4 5 6)')
     env = InterpreterEnv(lisp.BUILTINS)
-    self.assertSequenceEqual([579, 3, 15], p.eval(env))
+    self.assertSequenceEqual([579, 3, 15], env.eval(p.code()))
     

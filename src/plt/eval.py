@@ -59,9 +59,8 @@ class ScopedMap(object):
   def __repr__(self):
     return 'ScopedMap(%s)' % dict(self.items())
 
-
-def Intepreter():
-  def Add(): pass
-  def Sub(): pass
-  #...
+class InterpreterEnv(ScopedMap):
+  def Add(self): pass
+  def eval(self, tree):
+    raise Exception, 'Not implemented.'
     
