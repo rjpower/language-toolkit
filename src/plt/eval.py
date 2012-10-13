@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+from plt.ast import Node
 
 class ScopedMap(object):
   def __init__(self, parent=None):
@@ -58,9 +59,9 @@ class ScopedMap(object):
   def __repr__(self):
     return 'ScopedMap(%s)' % dict(self.items())
 
-class Environment(ScopedMap):
-  def Const(self, value): return value
-  def Add(self, *args): pass
-  def While(self, expr, body): pass
-  
-  
+
+def Intepreter():
+  def Add(): pass
+  def Sub(): pass
+  #...
+    

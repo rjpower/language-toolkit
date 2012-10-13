@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 from lisp import Program, Atom, SExpr
-from plt.eval import Environment
+from plt.eval import InterpreterEnv
 from plt.parser import parse, unparse
 import lisp
 import unittest
@@ -21,16 +21,16 @@ class TestLisp(unittest.TestCase):
 
   def test_eval_int(self):
     p = parse(Atom, '123')
-    env = Environment(lisp.BUILTINS)
+    env = InterpreterEnv(lisp.BUILTINS)
     self.assertEqual(p.eval(env), 123)
     
   def test_eval_sexpr(self):
     p = parse(SExpr, '(+ 123 456)')
-    env = Environment(lisp.BUILTINS)
+    env = InterpreterEnv(lisp.BUILTINS)
     self.assertEqual(p.eval(env), 579)
     
   def test_eval_program(self):
     p = parse(Program, '(+ 123 456) (+ 1 2) (+ 4 5 6)')
-    env = Environment(lisp.BUILTINS)
+    env = InterpreterEnv(lisp.BUILTINS)
     self.assertSequenceEqual([579, 3, 15], p.eval(env))
     
