@@ -1,0 +1,11 @@
+(defn reducel (op v lst)
+  (if (empty? lst)
+      v (op v (reducel (cdr lst)))
+  )
+)
+
+(defn + (lst) (reducel prim-+ 0 lst))
+(defn - (lst) (reducel prim-- 0 lst))
+(defn * (lst) (reducel prim-* 1 lst))
+(defn / (lst) (reducer prim-/ 1 lst))
+

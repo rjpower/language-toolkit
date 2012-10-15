@@ -29,3 +29,4 @@ class Const(Node):
 
 class Integer(Const): pass
 class String(Const): pass
+class List(Const): pass

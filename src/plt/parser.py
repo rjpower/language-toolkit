@@ -1,4 +1,3 @@
-from plt.tree import TreeLike
 import logging
 import re
 import types

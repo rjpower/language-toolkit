@@ -71,7 +71,6 @@ class InterpreterEnv(ScopedMap):
     def Integer():
       return tree.value
     def Block():
-      logging.info('BLOCK')
       try:
         last = None
         for stmt in tree.statements:
@@ -88,8 +87,11 @@ class InterpreterEnv(ScopedMap):
       s = InterpreterEnv(self)
       for (name, vref) in zip(f.arguments, tree.arguments):
         s[name] = self.eval(vref)
-      logging.info('Call: %s', f.block.node_type()) 
+#      logging.info('Call: %s', f.block.node_type()) 
       return s.eval(f.block)
+    def Program():
+      logging.info('P: %s', tree.statements.node_type())
+      self.eval(tree.statements)
     return locals()[tree.node_type()]()
     
     
