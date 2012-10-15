@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 from plt.ast import Node
+import logging
 
 class ScopedMap(object):
   def __init__(self, parent=None):
@@ -58,9 +59,37 @@ class ScopedMap(object):
   
   def __repr__(self):
     return 'ScopedMap(%s)' % dict(self.items())
+  
+class ReturnException(Exception):
+  def __init__(self, value):
+    self.value = value
 
 class InterpreterEnv(ScopedMap):
-  def Add(self): pass
   def eval(self, tree):
-    raise Exception, 'Not implemented.'
+    def Add():
+      return self.eval(tree.left) + self.eval(tree.right)
+    def Integer():
+      return tree.value
+    def Block():
+      logging.info('BLOCK')
+      try:
+        last = None
+        for stmt in tree.statements:
+          last = self.eval(stmt)
+        return last
+      except ReturnException, e:
+        return e.value
+    def Lookup():
+      return self[tree.name]
+    def Return():
+      raise ReturnException(self.eval(tree.value))
+    def Call():
+      f = self.eval(tree.function)
+      s = InterpreterEnv(self)
+      for (name, vref) in zip(f.arguments, tree.arguments):
+        s[name] = self.eval(vref)
+      logging.info('Call: %s', f.block.node_type()) 
+      return s.eval(f.block)
+    return locals()[tree.node_type()]()
+    
     

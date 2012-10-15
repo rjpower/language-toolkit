@@ -1,8 +1,11 @@
 from plt.ast import Node
 
 class Function(Node):
+  _required = ['arguments', 'block']
+
+class Block(Node):
   _required = ['statements']
-  
+
 class Arg(Node):
   _required = ['index']
   

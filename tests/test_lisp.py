@@ -32,5 +32,7 @@ class TestLisp(unittest.TestCase):
   def test_eval_program(self):
     p = parse(Program, '(+ 123 456) (+ 1 2) (+ 4 5 6)')
     env = InterpreterEnv(lisp.BUILTINS)
-    self.assertSequenceEqual([579, 3, 15], env.eval(p.code()))
-    
+    self.assertEqual(15, env.eval(p.code()))
+
+
+

@@ -4,10 +4,13 @@ from plt.parser import bnf, rep, opt, term, seq, parse, Scanner, EOF, IGNORE
 from plt.tree import TreeLike
 import logging
 
-BUILTINS = {}
+BUILTINS = eval.ScopedMap()
 BUILTINS['+'] = ir.Function(
+  ['left', 'right'],
+  ir.Block([
   ir.Return(
-    ir.Add(ir.Arg(0), ir.Arg(1))))
+    ir.Add(ir.Lookup('left'), ir.Lookup('right')))
+  ]))
 
 class Program(Node):
   _required = ['statements']
@@ -17,7 +20,7 @@ class Program(Node):
     return [('statements', rep(Expr)), EOF]
   
   def code(self):
-    return [stmt.code() for stmt in self.statements] 
+    return ir.Block([stmt.code() for stmt in self.statements]) 
 
 class Expr(Node):
   _required = ['value']
@@ -69,5 +72,5 @@ NODES = [Program, Expr, Atom, SExpr]
 
 if __name__ == '__main__':
   print '\n'.join('%s := %s' % (l, r) for (l, r) in bnf(NODES))
-  root = parse(Program, Scanner('(+ 1 2 3) (+ 1 2 3)'))
+  root = parse(Program, Scanner('(+ 1 2) (+ 1 2)'))
   print root
